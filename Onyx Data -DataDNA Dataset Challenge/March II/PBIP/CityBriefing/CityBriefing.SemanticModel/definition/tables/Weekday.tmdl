@@ -1,0 +1,21 @@
+table Weekday
+
+	column Num
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: Num
+		isHidden
+
+	column Name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Name
+		sortByColumn: Num
+
+	partition Weekday = m
+		mode: import
+		source =
+			let
+			    T = #table(type table [Num = Int64.Type, Name = text], {{1, "Mon"}, {2, "Tue"}, {3, "Wed"}, {4, "Thu"}, {5, "Fri"}, {6, "Sat"}, {7, "Sun"}})
+			in
+			    T

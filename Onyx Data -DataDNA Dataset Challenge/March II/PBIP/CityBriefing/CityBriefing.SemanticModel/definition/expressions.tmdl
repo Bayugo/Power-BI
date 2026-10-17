@@ -1,0 +1,2 @@
+expression DataPath = "C:\PBI\washington_crimes_clean.csv" meta [IsParameterQuery = true, IsParameterQueryRequired = true, Type = "Text"]
+	lineageTag: 3f8c6c52-9d52-4d7a-8f44-0b1a5d3f6e01

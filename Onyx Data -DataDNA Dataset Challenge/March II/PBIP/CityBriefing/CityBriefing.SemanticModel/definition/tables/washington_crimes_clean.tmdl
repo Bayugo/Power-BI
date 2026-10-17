@@ -1,0 +1,183 @@
+table washington_crimes_clean
+
+	measure Crimes = COUNTROWS ( washington_crimes_clean )
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure Violent = CALCULATE ( [Crimes], washington_crimes_clean[is_violent] = TRUE () )
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure Property = [Crimes] - [Violent]
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure Gun = CALCULATE ( [Crimes], washington_crimes_clean[is_gun] = TRUE () )
+		formatString: #,0
+		displayFolder: 1 Base
+
+	measure Days = DISTINCTCOUNT ( washington_crimes_clean[report_date] )
+		formatString: 0
+		displayFolder: 1 Base
+
+	measure 'Violent %' = DIVIDE ( [Violent], [Crimes] )
+		formatString: 0.0%
+		displayFolder: 2 Ratios
+
+	measure 'Gun %' = DIVIDE ( [Gun], [Crimes] )
+		formatString: 0.0%
+		displayFolder: 2 Ratios
+
+	measure 'Per Day' = DIVIDE ( [Crimes], [Days] )
+		formatString: 0
+		displayFolder: 2 Ratios
+
+	measure 'City Share' = DIVIDE ( [Crimes], CALCULATE ( [Crimes], ALL ( washington_crimes_clean ) ) )
+		formatString: 0%
+		displayFolder: 2 Ratios
+
+	measure '7D Avg' = AVERAGEX ( DATESINPERIOD ( 'Date'[Date], MAX ( 'Date'[Date] ), -7, DAY ), [Crimes] )
+		formatString: 0.0
+		displayFolder: 2 Ratios
+
+	measure 'Top Volume Ward' = 
+			VAR t = TOPN ( 1, ALL ( washington_crimes_clean[ward] ), [Crimes] )
+			RETURN "Ward " & MAXX ( t, washington_crimes_clean[ward] )
+		displayFolder: 3 Rankings
+
+	measure 'Top Violent Ward' = 
+			VAR t = TOPN ( 1, ALL ( washington_crimes_clean[ward] ), [Violent %] )
+			RETURN "Ward " & MAXX ( t, washington_crimes_clean[ward] )
+		displayFolder: 3 Rankings
+
+	measure 'Selected Metric' = SWITCH ( SELECTEDVALUE ( Metric[Metric], "All" ), "Violent", [Violent], "Gun", [Gun], [Crimes] )
+		formatString: #,0
+		displayFolder: 4 Switcher
+
+	measure 'Headline Brief' = 
+			VAR theft = CALCULATE ( [Crimes], washington_crimes_clean[offense] IN { "theft/other", "theft f/auto", "motor vehicle theft" } )
+			RETURN FORMAT ( [Crimes], "#,0" ) & " crimes in " & [Days] & " days — " & FORMAT ( DIVIDE ( theft, [Crimes] ), "0%" ) & " were theft, only " & FORMAT ( [Violent %], "0%" ) & " violent"
+		displayFolder: 5 Text
+
+	measure 'Headline Where' = [Top Volume Ward] & " has the volume. " & [Top Violent Ward] & " has the violence."
+		displayFolder: 5 Text
+
+	measure 'Insight Where' = 
+			VAR t = TOPN ( 1, ALL ( washington_crimes_clean[ward] ), [Violent %] )
+			RETURN [Top Violent Ward] & ": " & FORMAT ( MAXX ( t, [Violent %] ), "0%" ) & " of crimes are violent, with " & MAXX ( t, [Gun] ) & " gun incidents."
+		displayFolder: 5 Text
+
+	measure 'Insight When' = "Midnight is " & FORMAT ( CALCULATE ( [Violent %], ALL ( washington_crimes_clean ), washington_crimes_clean[shift] = "Midnight" ), "0%" ) & " violent vs " & FORMAT ( CALCULATE ( [Violent %], ALL ( washington_crimes_clean ), washington_crimes_clean[shift] = "Day" ), "0%" ) & " by day."
+		displayFolder: 5 Text
+
+	measure 'Insight What' = "Theft from auto + vehicle theft = " & FORMAT ( DIVIDE ( CALCULATE ( [Crimes], washington_crimes_clean[offense] IN { "theft f/auto", "motor vehicle theft" } ), [Crimes] ), "0%" ) & " of reports."
+		displayFolder: 5 Text
+
+	column ccn
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: ccn
+
+	column report_dt
+		dataType: dateTime
+		formatString: General Date
+		summarizeBy: none
+		sourceColumn: report_dt
+
+	column report_date
+		dataType: dateTime
+		formatString: Long Date
+		summarizeBy: none
+		sourceColumn: report_date
+
+	column offense
+		dataType: string
+		summarizeBy: none
+		sourceColumn: offense
+
+	column offense_label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: offense_label
+
+	column offensegroup
+		dataType: string
+		summarizeBy: none
+		sourceColumn: offensegroup
+
+	column method
+		dataType: string
+		summarizeBy: none
+		sourceColumn: method
+
+	column shift
+		dataType: string
+		summarizeBy: none
+		sourceColumn: shift
+
+	column ward
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: ward
+
+	column neighborhood_cluster
+		dataType: string
+		summarizeBy: none
+		sourceColumn: neighborhood_cluster
+
+	column block
+		dataType: string
+		summarizeBy: none
+		sourceColumn: block
+
+	column latitude
+		dataType: double
+		summarizeBy: none
+		sourceColumn: latitude
+
+	column longitude
+		dataType: double
+		summarizeBy: none
+		sourceColumn: longitude
+
+	column hour
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: hour
+
+	column weekday_num
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: weekday_num
+
+	column report_lag_days
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: report_lag_days
+
+	column lag_bucket
+		dataType: string
+		summarizeBy: none
+		sourceColumn: lag_bucket
+
+	column is_violent
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_violent
+
+	column is_gun
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_gun
+
+	partition washington_crimes_clean = m
+		mode: import
+		source =
+			let
+			    Source = Csv.Document(File.Contents(DataPath), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+			    Typed = Table.TransformColumnTypes(Promoted, {{"ccn", Int64.Type}, {"report_dt", type datetime}, {"report_date", type date}, {"offense", type text}, {"offense_label", type text}, {"offensegroup", type text}, {"method", type text}, {"shift", type text}, {"ward", Int64.Type}, {"neighborhood_cluster", type text}, {"block", type text}, {"latitude", type number}, {"longitude", type number}, {"hour", Int64.Type}, {"weekday_num", Int64.Type}, {"report_lag_days", Int64.Type}, {"is_violent", type logical}, {"is_gun", type logical}}, "en-US"),
+			    Bucket = Table.AddColumn(Typed, "lag_bucket", each if [report_lag_days] = null then null else if [report_lag_days] >= 7 then "7+" else Text.From([report_lag_days]), type text),
+			    Keep = Table.SelectColumns(Bucket, {"ccn","report_dt","report_date","offense","offense_label","offensegroup","method","shift","ward","neighborhood_cluster","block","latitude","longitude","hour","weekday_num","report_lag_days","lag_bucket","is_violent","is_gun"})
+			in
+			    Keep

@@ -1,0 +1,15 @@
+table Hour
+
+	column Hour
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: Hour
+
+	partition Hour = m
+		mode: import
+		source =
+			let
+			    T = Table.FromList(List.Numbers(0, 24), Splitter.SplitByNothing(), {"Hour"}),
+			    Typed = Table.TransformColumnTypes(T, {{"Hour", Int64.Type}})
+			in
+			    Typed

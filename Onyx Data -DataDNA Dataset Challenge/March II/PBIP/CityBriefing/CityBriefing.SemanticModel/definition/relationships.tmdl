@@ -1,0 +1,11 @@
+relationship a1111111-0000-4000-8000-000000000001
+	fromColumn: washington_crimes_clean.report_date
+	toColumn: Date.Date
+
+relationship a1111111-0000-4000-8000-000000000002
+	fromColumn: washington_crimes_clean.hour
+	toColumn: Hour.Hour
+
+relationship a1111111-0000-4000-8000-000000000003
+	fromColumn: washington_crimes_clean.weekday_num
+	toColumn: Weekday.Num

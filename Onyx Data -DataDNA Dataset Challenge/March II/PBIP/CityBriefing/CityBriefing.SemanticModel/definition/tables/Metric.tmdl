@@ -1,0 +1,21 @@
+table Metric
+
+	column Metric
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Metric
+		sortByColumn: Order
+
+	column Order
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: Order
+		isHidden
+
+	partition Metric = m
+		mode: import
+		source =
+			let
+			    T = #table(type table [Metric = text, Order = Int64.Type], {{"All", 1}, {"Violent", 2}, {"Gun", 3}})
+			in
+			    T

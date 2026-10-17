@@ -1,0 +1,33 @@
+table Date
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		formatString: Long Date
+		summarizeBy: none
+		sourceColumn: Date
+		isKey
+
+	column Month
+		dataType: string
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: MonthNum
+
+	column MonthNum
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: MonthNum
+		isHidden
+
+	partition Date = m
+		mode: import
+		source =
+			let
+			    Dates = List.Dates(#date(2025, 1, 1), 59, #duration(1, 0, 0, 0)),
+			    T = Table.FromList(Dates, Splitter.SplitByNothing(), {"Date"}),
+			    Typed = Table.TransformColumnTypes(T, {{"Date", type date}}),
+			    Month = Table.AddColumn(Typed, "Month", each Date.ToText([Date], "MMM"), type text),
+			    MonthNum = Table.AddColumn(Month, "MonthNum", each Date.Month([Date]), Int64.Type)
+			in
+			    MonthNum

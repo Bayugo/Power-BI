@@ -1,0 +1,70 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.0.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "CY24SU10",
+      "reportVersionAtImport": {
+        "visual": "1.8.50",
+        "report": "2.0.50",
+        "page": "1.3.50"
+      },
+      "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "CityBriefing_theme.json",
+      "reportVersionAtImport": {
+        "visual": "1.8.50",
+        "report": "2.0.50",
+        "page": "1.3.50"
+      },
+      "type": "RegisteredResources"
+    }
+  },
+  "objects": {
+    "outspacePane": [
+      {
+        "properties": {
+          "visible": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "resourcePackages": [
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "CityBriefing_theme.json",
+          "path": "CityBriefing_theme.json",
+          "type": "CustomTheme"
+        },
+        {
+          "name": "bg_brief.png",
+          "path": "bg_brief.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_where.png",
+          "path": "bg_where.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_when.png",
+          "path": "bg_when.png",
+          "type": "Image"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized"
+  }
+}
