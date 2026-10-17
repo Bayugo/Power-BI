@@ -19,6 +19,8 @@ d["offense_label"] = d.offense.str.title()
 d["month"] = d.report_dt.dt.strftime("%b")
 d["weekday"] = d.report_dt.dt.day_name()
 d["hour"] = d.report_dt.dt.hour
+d["report_date"] = d.report_dt.dt.date
+d["weekday_num"] = d.report_dt.dt.dayofweek + 1
 d["report_lag_days"] = (d.report_dt.dt.normalize() - d.start_dt.dt.normalize()).dt.days.clip(lower=0)
 d["is_violent"] = d.offensegroup.eq("violent")
 d["is_gun"] = d.method.eq("gun")
